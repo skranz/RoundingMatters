@@ -7,7 +7,7 @@
 deround.z.uniform(
   mu.round,
   sigma.round,
-  mu.dec = pmax(num.dec(mu.round), num.dec(sigma.round)),
+  mu.dec = pmax(num.deci(mu.round), num.deci(sigma.round)),
   sigma.dec = sigma.mu
 )
 }
@@ -16,7 +16,7 @@ deround.z.uniform(
 
 \item{sigma.round}{Reported standard error, possibly rounded.}
 
-\item{mu.dec}{Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.dec(mu.round),num.dec(sigma.round))}.}
+\item{mu.dec}{Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.deci(mu.round),num.deci(sigma.round))}.}
 
 \item{sigma.dec}{By default equal to mu.dec.}
 }

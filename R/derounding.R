@@ -40,10 +40,10 @@ compute.theta.stats = function(z, z0=1.96, h=NULL) {
 #' Draw derounded z assuming missing digits of mu and sigma are uniformly distributed
 #' @param mu.round Reported coefficient, possibly rounded
 #' @param sigma.round Reported standard error, possibly rounded.
-#' @param mu.dec Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.dec(mu.round),num.dec(sigma.round))}.
+#' @param mu.dec Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.deci(mu.round),num.deci(sigma.round))}.
 #' @param sigma.dec By default equal to mu.dec.
 #' @export
-deround.z.uniform = function(mu.round, sigma.round,mu.dec=pmax(num.dec(mu.round),num.dec(sigma.round)), sigma.dec=sigma.mu) {
+deround.z.uniform = function(mu.round, sigma.round,mu.dec=pmax(num.deci(mu.round),num.deci(sigma.round)), sigma.dec=sigma.mu) {
   mu.deround = mu.round + runif(n, -0.5,0.5)*10^(-mu.dec)
   sigma.deround = sigma.round + runif(n, -0.5,0.5)*10^(-sigma.dec)
   z.deround = mu.deround / sigma.deround
@@ -54,12 +54,12 @@ deround.z.uniform = function(mu.round, sigma.round,mu.dec=pmax(num.dec(mu.round)
 #' @param z.pdf An estimated density of the derounded z-statistics (e.g. using only observations with many significant digits) normalized such that its highest values is 1. Best use \code{make.normalized.z.pdf} to create such a normalized pdf from a vector of observed z-statistics.
 #' @param mu.round Reported coefficient, possibly rounded
 #' @param sigma.round Reported standard error, possibly rounded.
-#' @param mu.dec Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.dec(mu.round),num.dec(sigma.round))}.
+#' @param mu.dec Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.deci(mu.round),num.deci(sigma.round))}.
 #' @param sigma.dec By default equal to mu.dec.
 #' @param max.rejection.rounds A limit how often the rejection sampler redraws to avoid an infinite loop.
 #' @param verbose If \code{TRUE} cat an r for each resampling draw to see how the function progresses.
 #' @export
-deround.z.density.adjust = function(z.pdf, mu.round, sigma.round, mu.dec=pmax(num.dec(mu.round),num.dec(sigma.round)), sigma.dec=sigma.mu, max.rejection.rounds = 10000, verbose=TRUE) {
+deround.z.density.adjust = function(z.pdf, mu.round, sigma.round, mu.dec=pmax(num.deci(mu.round),num.deci(sigma.round)), sigma.dec=sigma.mu, max.rejection.rounds = 10000, verbose=TRUE) {
   mu.deround = mu.round + runif(n, -0.5,0.5)*10^(-sigma.dec)
   sigma.deround = sigma.round + runif(n, -0.5,0.5)*10^(-sigma.dec)
   z.deround = mu.deround / sigma.deround

@@ -5,7 +5,7 @@
 \title{theta shall be the probability that a z-statistic is
 above a threshold z0 in a window with half-width h around z0}
 \usage{
-compute.theta.stats(z, z0 = 1.96, h = NULL)
+\method{compute}{theta.stats}(z, z0 = 1.96, h = NULL)
 }
 \arguments{
 \item{z}{A vector of z-values, possible a derounding draw}

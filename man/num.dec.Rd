@@ -5,7 +5,7 @@
 \title{Get the number of significand digits of a floating point number
 using the character presentation of those numbers of R}
 \usage{
-num.dec(x)
+num.deci(x)
 }
 \arguments{
 \item{x}{a numeric vector}

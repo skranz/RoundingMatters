@@ -7,7 +7,7 @@ examples.digit.tools = function(x) {
   significand(x)
   num.sig.digits(x)
   set.last.digit.zero(x)
-  num.dec(x)
+  num.deci(x)
   rightmost.sig.digit(x, 1,1)
 }
 
@@ -20,8 +20,12 @@ examples.digit.tools = function(x) {
 #'
 #' @param x a numeric vector
 #' @export
-significand = function(x) {
+significand = function(x, num.deci=NULL) {
   options(scipen=999)
+  if (!is.null(num.deci)) {
+    return(round(x*10^num.deci))
+  }
+
   #format(x,digits=max.digits,scientific = FALSE,justify = "none")
   str = as.character(x)
   str = gsub(".","",str,fixed=TRUE)
@@ -53,7 +57,7 @@ num.sig.digits = function(x) {
 #'
 #' @param x a numeric vector
 #' @export
-num.dec = function(x) {
+num.deci = function(x) {
   options(scipen=999)
   str = as.character(x)
   pos.dec = regexpr(pattern ='.',str, fixed=TRUE)
