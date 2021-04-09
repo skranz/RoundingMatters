@@ -8,7 +8,7 @@
 #' @param z a vector of z statistics. Usually, you would select
 #'          all values from dat whose mu and sigma have sufficiently
 #'          many significant digits
-#' @param ... other parameters passed to \link{\code{stats::density}}
+#' @param ... other parameters passed to \code{\link{stats::density}}
 make.z.pdf = function(z, bw=0.02, kernel="gaussian", n=512,dat, min.s=100,z.min=0, z.max=5,show.hist=FALSE,...) {
   if (missing(z) & !missing(dat)) {
     rows = which(dat$s >= min.s)

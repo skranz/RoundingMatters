@@ -53,18 +53,36 @@ example = function() {
   h.seq = c(0.05,0.075,0.1,0.2,0.3,0.4,0.5)
 }
 
+#' Compute t-tests (or other summary statistics) for different window half-widths around z0 using some derounding approach
+#'
+#' @param dat a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). It also have columns z, num.deci and s. If those later columns do not exist, they will be computed from mu and sigma.
+#' @param h.seq All considered half-window sizes
+#' @param mode Mode how a single draw of derounded z is computed: "reported", "uniform","zda","dsr" or some custom name (requires ab.df to be defined)
+#' @param sigma Reported standard error, possibly rounded.
+#' @param mu.dec Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.deci(mu),num.deci(sigma))}.
+#' @param sigma.dec By default equal to mu.dec.
+#' @export
 compute.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5), mode=c("reported", "uniform","zda","dsr")[1],fun = compute.binom.test, z0 = ifelse(has.col(dat,"z0"), dat[["z0"]], 1.96), z.pdf=NULL, ab.df = NULL, repl=1, aggregate.fun="median", max.s = 100, alt.mode = c("uniform","reported")[2]) {
   restore.point("compute.with.derounding")
 
-  if (!all(has.col(dat,c("z","mu","sigma"))))
-    stop("Your data set dat needs the columns z, mu, sigma.")
+
+
+  if (!all(has.col(dat,c("mu","sigma"))))
+    stop("Your data set dat needs the columns mu and sigma.")
+
 
   if (!alt.mode %in%  c("uniform","reported")) {
     stop("alt.mode must be 'uniform' or 'reported'")
   }
+  if(!has.col(dat, "z"))
+    dat$z = dat$mu / dat$sigma
 
   if (!has.col(dat, "num.deci"))
     dat$num.deci = pmax(num.deci(dat$mu),num.deci(dat$sigma))
+
+  if(!has.col(dat, "s"))
+    dat$s = significand(dat$sigma,dat$num.deci)
+
 
   z0.vec = rep(z0,length.out=NROW(dat))
 

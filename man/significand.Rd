@@ -5,7 +5,7 @@
 \title{Get the significands of a numeric vector using
 the character presentation of those numbers of R}
 \usage{
-significand(x)
+significand(x, num.deci = NULL)
 }
 \arguments{
 \item{x}{a numeric vector}
