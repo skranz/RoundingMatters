@@ -51,6 +51,7 @@ rounding.risks = function(z,s, z0=1.96, h=0.2) {
       risk.misclass = s < s.misclass,
       risk.exclude = s < s.exclude,
       risk.include = s < s.include,
+      risk.any = risk.misclass | risk.exclude | risk.include,
 
       risk.misclass.below = risk.misclass & z.below,
       risk.misclass.above = risk.misclass & !z.below,
@@ -126,5 +127,17 @@ min.max.z = function(mu, sigma, mu.dec=pmax(num.deci(mu),num.deci(sigma)), sigma
     z.min = mu.min / ifelse(mu.min >= 0, sigma.max, sigma.min),
     z.max = mu.max / ifelse(mu.max >= 0, sigma.min, sigma.max)
   )
+}
+
+has.rounding.risk = function(dat=NULL, z=dat$z,s=dat$s, h.seq = c(0.05,0.075,0.1,0.2,0.3,0.4,0.5), z0=1.96) {
+  restore.point("dsr.mark.obs")
+  n = nrow(dat)
+  has.risk = rep(FALSE,n)
+
+  for (h in h.seq) {
+    risk.any = rounding.risks(z = dat$z, s=dat$s, z0=z0, h=h)$risk.any
+    has.risk = has.risk | risk.any
+  }
+  has.risk
 }
 
