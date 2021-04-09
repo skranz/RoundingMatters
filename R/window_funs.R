@@ -2,21 +2,14 @@
 # draw of derounded z inside a window around z0
 
 
-#' theta shall be the probability that a z-statistic is
-#' above a threshold z0 in a window with half-width h around z0
+#' Window function returning estimated probability that a z-statistic is
+#' above a threshold z0 in a window with half-width h around z0 and t-test
+#' confidence intervals
 #'
-#' This function returns for a given vector of z
-#' (possibly one derounding draw) statistics:
-#' estimate, standard error, 95% CI of theta
-#' and number of observations etc
+#' Can be used as argument \code{window.fun} in \code{\link{compute.with.derounding}}
 #'
-#' This can be used inside Monte Carlo simulations
-#'
-#' @param z A vector of z-values, possible a derounding draw
-#' @param z0 The critical treshold of z that marks an observation significant. This can be a single value, or a vector of the same length as z. This allows to use critical t-values that are adjusted for the sample size of the test an observation refers to
-#' @param h The half-width of the considered window around z0. If NULL assume that all observations are already in the correct window.
 #' @export
-compute.t.stats = function(above=z>=z0,h=NA, ci.level=0.9,z,z0,...) {
+window.t.ci = function(above=z>=z0,h=NA, ci.level=0.9,z,z0,...) {
   restore.point("compute.t.stats")
   n = length(above)
   theta = mean(above)
@@ -34,7 +27,7 @@ compute.t.stats = function(above=z>=z0,h=NA, ci.level=0.9,z,z0,...) {
 
 }
 
-compute.binom.test = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
+window.binom.test = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
   restore.point("compute.binom.test")
   n = length(above)
   theta = mean(above)

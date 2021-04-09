@@ -14,28 +14,28 @@ example = function() {
   dat = filter(all.dat, method=="DID")
 
   dat = all.dat
-  res.omit = compute.with.derounding(filter(dat, s>=37 | is.na(s)), mode="reported", repl=30)
+  res.omit = study.with.derounding(filter(dat, s>=37 | is.na(s)), mode="reported", repl=30)
   res.omit$mode = "omit"
 
-  res.omit.unif = compute.with.derounding(filter(dat, s>=37 | is.na(s)), mode="uniform", repl=30)
+  res.omit.unif = study.with.derounding(filter(dat, s>=37 | is.na(s)), mode="uniform", repl=30)
   res.omit.unif$mode = "omit.unif"
 
 
-  res.rep = compute.with.derounding(dat, mode="reported", repl=30)
+  res.rep = study.with.derounding(dat, mode="reported", repl=30)
 
 
-  res.uniform = compute.with.derounding(dat, mode="uniform", repl=30)
+  res.uniform = study.with.derounding(dat, mode="uniform", repl=30)
   res.uniform
 
   z.pdf = make.z.pdf(dat=dat, min.s=100, show.hist=TRUE)
-  res.zda = compute.with.derounding(dat, mode="zda",z.pdf=z.pdf, repl=30)
+  res.zda = study.with.derounding(dat, mode="zda",z.pdf=z.pdf, repl=30)
   res.zda
 
   #dat = dsr.mark.obs(dat)
   #ab.sum = dsr.compute.summaries(dat)
 
-  ab.df = readRDS("dsr.Rds") %>% dsr.to.long() %>% filter(zmode=="dsr")
-  res.dsr = compute.with.derounding(dat, mode="dsr",ab.df = ab.df, repl=30)
+  ab.df = readRDS("dsr.Rds")
+  res.dsr = study.with.derounding(dat, mode="dsr",ab.df = ab.df, repl=30)
 
   res = bind_rows(res.rep,res.omit, res.omit.unif, res.uniform, res.zda, res.dsr) %>%
     arrange(h)
@@ -53,19 +53,24 @@ example = function() {
   h.seq = c(0.05,0.075,0.1,0.2,0.3,0.4,0.5)
 }
 
-#' Compute t-tests (or other summary statistics) for different window half-widths around z0 using some derounding approach
+#' Analysis with derounded z-statistics for different window half-widths around z0
+#'
+#' This is the main function you will call if you want to perform a publication bias / p-hacking analysis with derounded z-statistics. It allows flexible combinations of how a single derounded z vector is drawn, which statistics are computed for each combination of window h and derounded z-draw and how those statistics are aggregated over multiple replications.
 #'
 #' @param dat a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). It also have columns z, num.deci and s. If those later columns do not exist, they will be computed from mu and sigma.
 #' @param h.seq All considered half-window sizes
+#' @param window.fun The function that computes for each draw of a derounded z vector and a window h the statistics of interest. Examples are \code{\link{window.t.ci}} (DEFAULT) or \code{\link{window.binom.test}}. Not that our implementation of dsr derounding (or any other derounding using \code{ab.df}) does not draw derounded z, but only creates a logical vector \code{above} indicating which draws are above or below the z0 threshold. This means if you write a custom function, it should essentially work on that vector.
 #' @param mode Mode how a single draw of derounded z is computed: "reported", "uniform","zda","dsr" or some custom name (requires ab.df to be defined)
-#' @param sigma Reported standard error, possibly rounded.
-#' @param mu.dec Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.deci(mu),num.deci(sigma))}.
-#' @param sigma.dec By default equal to mu.dec.
+#' @param alt.mode Either "uniform" (DEFAULT) or "reported". Some derounding modes like "zda" and "dsr" cannot be well defined (or are too time-consuming to compute) for observations with many significant digits or outlier z-statistics. \code{alt.mode} specifies how z values shall be selected for those observations.
+#' @param z0 The significance threshold for z
+#' @param repl Number of replications of each derounding draw.
+#' @param aggregate.fun How shall multiple replications be aggregated. Not yet implemented. Currently we always take the medians of each variale returned by window.fun of all replications.
+#' @param ab.df Required if \code{mode=="dsr"} or some custom mode. See e.g. \code{\link{dsr.ab.df}}.
+#' @param z.pdf Required if \code{mode=="zda"}. Should be generated via \code{\link{make.z.pdf}}.
+#' @param max.s Used if \code{mode=="zda"}. Specifies the maximum significand for which zda derounding shall be performed. For observations with larger significand s, uniform derounding will be performed.
 #' @export
-compute.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5), mode=c("reported", "uniform","zda","dsr")[1],fun = compute.binom.test, z0 = ifelse(has.col(dat,"z0"), dat[["z0"]], 1.96), z.pdf=NULL, ab.df = NULL, repl=1, aggregate.fun="median", max.s = 100, alt.mode = c("uniform","reported")[2]) {
-  restore.point("compute.with.derounding")
-
-
+study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),window.fun = compute.binom.test, mode=c("reported", "uniform","zda","dsr")[1], alt.mode = c("uniform","reported")[1], z0 = ifelse(has.col(dat,"z0"), dat[["z0"]], 1.96), repl=1, aggregate.fun="median",  ab.df = NULL,z.pdf=NULL,max.s = 100) {
+  restore.point("study.with.derounding")
 
   if (!all(has.col(dat,c("mu","sigma"))))
     stop("Your data set dat needs the columns mu and sigma.")
@@ -98,7 +103,7 @@ compute.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),
 
   # For reported we run only once
   if (mode == "reported") {
-    res = compute.stats.for.all.h(z=dat$z, z0=z0, h.seq=h.seq,fun=fun, dat=dat)
+    res = compute.stats.for.all.h(z=dat$z, z0=z0, h.seq=h.seq,window.fun=window.fun, dat=dat)
     res$mode = mode
     res$repl = 1
 
@@ -115,13 +120,13 @@ compute.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),
 
     res = lapply(1:repl, function(r) {
       z = deround.z.density.adjust(z.pdf, dat$mu, dat$sigma, dat$num.deci, just.uniform=just.uniform)
-      compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,fun=fun, dat=dat)
+      compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,window.fun=window.fun, dat=dat)
     })
   } else if (mode == "uniform") {
     res = lapply(1:repl, function(r) {
       # TO DO: Do we really need to deround all observations?
       z = deround.z.uniform(dat$mu, dat$sigma, dat$num.deci)
-      compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,fun=fun, dat=dat)
+      compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,fun=window.fun, dat=dat)
     })
   } else {
     n = NROW(dat)
@@ -159,7 +164,7 @@ compute.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),
         }
         use.rows = which(in.window)
         above = is.above[use.rows]
-        inner.res = fun(above=above,h=h,dat=dat, rows=use.rows,...)
+        inner.res = window.fun(above=above,h=h,dat=dat, rows=use.rows,...)
         inner.res$obs.alt = sum(in.window[alt.rows], na.rm=TRUE)
         inner.res
       }))
@@ -186,7 +191,7 @@ compute.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),
 }
 
 
-compute.stats.for.all.h = function(z,z0,h.seq=0.1, fun,dat=NULL,...) {
+compute.stats.for.all.h = function(z,z0,h.seq=0.1, window.fun,dat=NULL,...) {
   restore.point("compute.stats.for.all.h")
 
   z0.h = z0
@@ -197,13 +202,14 @@ compute.stats.for.all.h = function(z,z0,h.seq=0.1, fun,dat=NULL,...) {
       z0.h = z0[rows]
     }
     above = z.h >= z0.h
-    fun(above=above, z=z.h,z0=z0.h,h=h,dat=dat, rows=rows,...)
+    window.fun(above=above, z=z.h,z0=z0.h,h=h,dat=dat, rows=rows,...)
   }))
   res
 }
 
 
 #' Draw derounded z assuming missing digits of mu and sigma are uniformly distributed
+#'
 #' @param mu Reported coefficient, possibly rounded
 #' @param sigma Reported standard error, possibly rounded.
 #' @param mu.dec Number of decimal places mu is reported to. Usually, we would assume that mu and sigma are rounded to the same number of decimal places. Since trailing zeros may not be detected, we set the default \code{mu.dec=pmax(num.deci(mu),num.deci(sigma))}.
