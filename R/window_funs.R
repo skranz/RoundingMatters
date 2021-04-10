@@ -9,8 +9,8 @@
 #' Can be used as argument \code{window.fun} in \code{\link{compute.with.derounding}}
 #'
 #' @export
-window.t.ci = function(above=z>=z0,h=NA, ci.level=0.9,z,z0,...) {
-  restore.point("compute.t.stats")
+window.t.ci = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
+  #restore.point("compute.t.stats")
   n = length(above)
   theta = mean(above)
   se = sd(above) / sqrt(n)
@@ -28,7 +28,7 @@ window.t.ci = function(above=z>=z0,h=NA, ci.level=0.9,z,z0,...) {
 }
 
 window.binom.test = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
-  restore.point("compute.binom.test")
+  #restore.point("compute.binom.test")
   n = length(above)
   theta = mean(above)
   se = sd(above) / sqrt(n)
@@ -36,7 +36,7 @@ window.binom.test = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
 
   res = binom.test(x=sum(above), n=length(above), p = 0.5,
            alternative = c("greater"),
-           conf.level = 0.95)
+           conf.level = ci.level)
 
   ci.low = res$conf.int[1]
   ci.up = res$conf.int[2]
