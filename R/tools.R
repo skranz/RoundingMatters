@@ -7,3 +7,10 @@ is.true = function(x) {
   is.true[which(x==TRUE)] = TRUE
   is.true
 }
+
+quick.df = function (...) {
+    df = list(...)
+    attr(df, "row.names") <- 1:length(df[[1]])
+    attr(df, "class") <- "data.frame"
+    df
+}

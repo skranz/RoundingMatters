@@ -27,6 +27,9 @@ window.t.ci = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
 
 }
 
+#' Apply on windows one-sided binomiminal test with H0: z <= z0
+#'
+#' @export
 window.binom.test = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
   #restore.point("compute.binom.test")
   n = length(above)
@@ -45,6 +48,24 @@ window.binom.test = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
 
 }
 
+#' Apply on windows two sided binomiminal test with H0: z = z0
+#'
+#' @export
+window.binom.test.2s = function(above=z>=z0,h=NA, ci.level=0.90,z,z0,...) {
+  #restore.point("compute.binom.test")
+  n = length(above)
+  theta = mean(above)
+  se = sd(above) / sqrt(n)
 
 
+  res = binom.test(x=sum(above), n=length(above), p = 0.5,
+           alternative = c("two.sided"),
+           conf.level = ci.level)
+
+  ci.low = res$conf.int[1]
+  ci.up = res$conf.int[2]
+
+  as_tibble(list(h=h,theta=theta, p.value = res$p.value, ci.level = ci.level, ci.low=ci.low, ci.up = ci.up, obs=n))
+
+}
 

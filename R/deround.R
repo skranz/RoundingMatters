@@ -69,7 +69,7 @@ example = function() {
 #' @param z.pdf Required if \code{mode=="zda"}. Should be generated via \code{\link{make.z.pdf}}.
 #' @param max.s Used if \code{mode=="zda"}. Specifies the maximum significand for which zda derounding shall be performed. For observations with larger significand s, uniform derounding will be performed.
 #' @export
-study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),window.fun = window.t.ci, mode=c("reported", "uniform","zda","dsr")[1], alt.mode = c("uniform","reported")[1], z0 = ifelse(has.col(dat,"z0"), dat[["z0"]], 1.96), repl=1, aggregate.fun="median",  ab.df = NULL,z.pdf=NULL,max.s = 100, verbose=TRUE) {
+study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),window.fun = window.t.ci, mode=c("reported", "uniform","zda","dsr")[1], alt.mode = c("uniform","reported")[1], make.z.fun=NULL, z0 = ifelse(has.col(dat,"z0"), dat[["z0"]], 1.96), repl=1, aggregate.fun="median",  ab.df = NULL,z.pdf=NULL,max.s = 100, verbose=TRUE) {
   restore.point("study.with.derounding")
 
   if (!all(has.col(dat,c("mu","sigma"))))
@@ -134,6 +134,11 @@ study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),wi
       z = deround.z.uniform(dat$mu, dat$sigma, dat$num.deci)
       z[no.deround.rows] = dat$z[no.deround.rows]
 
+      compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,window.fun=window.fun, dat=dat)
+    })
+  } else if (!is.null(make.z.fun)) {
+    res = lapply(1:repl, function(r) {
+      z = make.z.fun(dat)
       compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,window.fun=window.fun, dat=dat)
     })
   } else {

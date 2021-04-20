@@ -7,7 +7,7 @@
 study.with.derounding(
   dat,
   h.seq = c(0.05, 0.075, 0.1, 0.2, 0.3, 0.4, 0.5),
-  window.fun = compute.binom.test,
+  window.fun = window.t.ci,
   mode = c("reported", "uniform", "zda", "dsr")[1],
   alt.mode = c("uniform", "reported")[1],
   z0 = ifelse(has.col(dat, "z0"), dat[["z0"]], 1.96),
@@ -15,11 +15,12 @@ study.with.derounding(
   aggregate.fun = "median",
   ab.df = NULL,
   z.pdf = NULL,
-  max.s = 100
+  max.s = 100,
+  verbose = TRUE
 )
 }
 \arguments{
-\item{dat}{a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). It also have columns z, num.deci and s. If those later columns do not exist, they will be computed from mu and sigma.}
+\item{dat}{a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). The optional column \code{no.deround} can specify rows whose z statistic shall never be derounded. \code{dat} can also have the columns z, num.deci and s. If those columns do not exist, they will be computed from mu and sigma.}
 
 \item{h.seq}{All considered half-window sizes}
 

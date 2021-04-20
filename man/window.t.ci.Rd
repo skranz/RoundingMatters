@@ -6,7 +6,7 @@
 above a threshold z0 in a window with half-width h around z0 and t-test
 confidence intervals}
 \usage{
-\method{window}{t.ci}(above = z >= z0, h = NA, ci.level = 0.9, z, z0, ...)
+\method{window}{t.ci}(above = z >= z0, h = NA, ci.level = 0.95, z, z0, ...)
 }
 \description{
 Can be used as argument \code{window.fun} in \code{\link{compute.with.derounding}}
