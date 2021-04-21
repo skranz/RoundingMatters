@@ -7,7 +7,7 @@
 make.z.pdf(
   z,
   bw = 0.02,
-  kernel = "gaussian",
+  kernel = "epanechnikov",
   n = 512,
   dat,
   min.s = 100,

@@ -10,17 +10,19 @@ study.with.derounding(
   window.fun = window.t.ci,
   mode = c("reported", "uniform", "zda", "dsr")[1],
   alt.mode = c("uniform", "reported")[1],
+  make.z.fun = NULL,
   z0 = ifelse(has.col(dat, "z0"), dat[["z0"]], 1.96),
   repl = 1,
   aggregate.fun = "median",
   ab.df = NULL,
   z.pdf = NULL,
   max.s = 100,
+  common.deci = TRUE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{dat}{a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). The optional column \code{no.deround} can specify rows whose z statistic shall never be derounded. \code{dat} can also have the columns z, num.deci and s. If those columns do not exist, they will be computed from mu and sigma.}
+\item{dat}{a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). The optional column \code{no.deround} can specify rows whose z statistic shall never be derounded. \code{dat} can also have the columns z, num.deci, mu.deci and sigma.deci. If those columns do not exist, they will be computed from mu and sigma.}
 
 \item{h.seq}{All considered half-window sizes}
 
@@ -41,6 +43,8 @@ study.with.derounding(
 \item{z.pdf}{Required if \code{mode=="zda"}. Should be generated via \code{\link{make.z.pdf}}.}
 
 \item{max.s}{Used if \code{mode=="zda"}. Specifies the maximum significand for which zda derounding shall be performed. For observations with larger significand s, uniform derounding will be performed.}
+
+\item{common.deci}{Shall we assume that mu and sigma are given with the same number of decimal places. If \code{TRUE} (Default) take the column \code{num.deci} i present in \code{dat} or create it as the pairwise maximum of the decimal places of mu and sigma. If \code{FALSE}, either use the columns \code{mu.deci} and \code{sigma.deci} if present in \code{dat} or generate them from mu and sigma.}
 }
 \description{
 This is the main function you will call if you want to perform a publication bias / p-hacking analysis with derounded z-statistics. It allows flexible combinations of how a single derounded z vector is drawn, which statistics are computed for each combination of window h and derounded z-draw and how those statistics are aggregated over multiple replications.

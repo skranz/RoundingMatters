@@ -57,7 +57,7 @@ example = function() {
 #'
 #' This is the main function you will call if you want to perform a publication bias / p-hacking analysis with derounded z-statistics. It allows flexible combinations of how a single derounded z vector is drawn, which statistics are computed for each combination of window h and derounded z-draw and how those statistics are aggregated over multiple replications.
 #'
-#' @param dat a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). The optional column \code{no.deround} can specify rows whose z statistic shall never be derounded. \code{dat} can also have the columns z, num.deci and s. If those columns do not exist, they will be computed from mu and sigma.
+#' @param dat a data frame containing all observations. Each observation is a test from a regression table in some article. It must have  the columns \code{mu} (reported coefficient) and \code{sigma} (reported standard error). The optional column \code{no.deround} can specify rows whose z statistic shall never be derounded. \code{dat} can also have the columns z, num.deci, mu.deci and sigma.deci. If those columns do not exist, they will be computed from mu and sigma.
 #' @param h.seq All considered half-window sizes
 #' @param window.fun The function that computes for each draw of a derounded z vector and a window h the statistics of interest. Examples are \code{\link{window.t.ci}} (DEFAULT) or \code{\link{window.binom.test}}. Not that our implementation of dsr derounding (or any other derounding using \code{ab.df}) does not draw derounded z, but only creates a logical vector \code{above} indicating which draws are above or below the z0 threshold. This means if you write a custom function, it should essentially work on that vector.
 #' @param mode Mode how a single draw of derounded z is computed: "reported", "uniform","zda","dsr" or some custom name (requires ab.df to be defined)
@@ -68,8 +68,9 @@ example = function() {
 #' @param ab.df Required if \code{mode=="dsr"} or some custom mode. See e.g. \code{\link{dsr.ab.df}}.
 #' @param z.pdf Required if \code{mode=="zda"}. Should be generated via \code{\link{make.z.pdf}}.
 #' @param max.s Used if \code{mode=="zda"}. Specifies the maximum significand for which zda derounding shall be performed. For observations with larger significand s, uniform derounding will be performed.
+#' @param common.deci Shall we assume that mu and sigma are given with the same number of decimal places. If \code{TRUE} (Default) take the column \code{num.deci} i present in \code{dat} or create it as the pairwise maximum of the decimal places of mu and sigma. If \code{FALSE}, either use the columns \code{mu.deci} and \code{sigma.deci} if present in \code{dat} or generate them from mu and sigma.
 #' @export
-study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),window.fun = window.t.ci, mode=c("reported", "uniform","zda","dsr")[1], alt.mode = c("uniform","reported")[1], make.z.fun=NULL, z0 = ifelse(has.col(dat,"z0"), dat[["z0"]], 1.96), repl=1, aggregate.fun="median",  ab.df = NULL,z.pdf=NULL,max.s = 100, verbose=TRUE) {
+study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),window.fun = window.t.ci, mode=c("reported", "uniform","zda","dsr")[1], alt.mode = c("uniform","reported")[1], make.z.fun=NULL, z0 = ifelse(has.col(dat,"z0"), dat[["z0"]], 1.96), repl=1, aggregate.fun="median",  ab.df = NULL,z.pdf=NULL,max.s = 100, common.deci=TRUE, verbose=TRUE) {
   restore.point("study.with.derounding")
 
   if (!all(has.col(dat,c("mu","sigma"))))
@@ -82,11 +83,25 @@ study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),wi
   if(!has.col(dat, "z"))
     dat$z = dat$mu / dat$sigma
 
-  if (!has.col(dat, "num.deci"))
-    dat$num.deci = pmax(num.deci(dat$mu),num.deci(dat$sigma))
+  if (common.deci) {
+    if (!has.col(dat, "num.deci"))
+      dat$num.deci = pmax(num.deci(dat$mu),num.deci(dat$sigma))
 
-  if(!has.col(dat, "s"))
-    dat$s = significand(dat$sigma,dat$num.deci)
+    dat$use.mu.deci = dat$use.sigma.deci = dat$num.deci
+  } else {
+    if (!has.col(dat, "mu.deci")) {
+      dat$use.mu.deci = num.deci(dat$mu)
+    } else {
+      dat$use.mu.deci = dat$mu.deci
+    }
+    if (!has.col(dat, "sigma.deci")) {
+      dat$use.sigma.deci = num.deci(dat$sigma)
+    } else {
+      dat$use.sigma.deci = dat$sigma.deci
+    }
+  }
+
+  dat$s = significand(dat$sigma,dat$use.sigma.deci)
 
   no.deround.rows = integer(0)
   if (has.col(dat,"no.deround"))
@@ -116,14 +131,14 @@ study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),wi
 
   if (mode == "zda") {
     if (!has.col(dat,"z.min"))
-      dat = bind_cols(dat,min.max.z(dat$mu, dat$sigma, dat$num.deci))
+      dat = bind_cols(dat,min.max.z(dat$mu, dat$sigma, dat$use.mu.deci, dat$use.sigma.deci))
 
     has.risk = has.rounding.risk(dat=dat,h.seq=h.seq)
 
     just.uniform = dat$s > max.s | !has.risk
 
     res = lapply(1:repl, function(r) {
-      z = deround.z.density.adjust(z.pdf, dat$mu, dat$sigma, dat$num.deci, just.uniform=just.uniform,verbose = verbose)
+      z = deround.z.density.adjust(z.pdf, dat$mu, dat$sigma, dat$use.mu.deci, dat$use.sigma.deci, just.uniform=just.uniform,verbose = verbose)
       z[no.deround.rows] = dat$z[no.deround.rows]
 
       compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,window.fun=window.fun, dat=dat)
@@ -131,7 +146,7 @@ study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),wi
   } else if (mode == "uniform") {
     res = lapply(1:repl, function(r) {
       # TO DO: Do we really need to deround all observations?
-      z = deround.z.uniform(dat$mu, dat$sigma, dat$num.deci)
+      z = deround.z.uniform(dat$mu, dat$sigma, dat$use.mu.deci, dat$use.sigma.deci)
       z[no.deround.rows] = dat$z[no.deround.rows]
 
       compute.stats.for.all.h(z=z, z0=z0, h.seq=h.seq,window.fun=window.fun, dat=dat)
@@ -151,7 +166,7 @@ study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),wi
     res = lapply(1:repl, function(r) {
       rand = runif(n,0,1)
       if (alt.mode == "uniform") {
-        alt.z = deround.z.uniform(dat$mu, dat$sigma, dat$num.deci)
+        alt.z = deround.z.uniform(dat$mu, dat$sigma, dat$use.mu.deci, dat$use.sigma.deci)
       } else if (alt.mode == "reported") {
         alt.z = dat$z
       }
