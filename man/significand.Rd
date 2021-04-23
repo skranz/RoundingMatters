@@ -8,7 +8,9 @@ the character presentation of those numbers of R}
 significand(x, num.deci = NULL)
 }
 \arguments{
-\item{x}{a numeric vector}
+\item{x}{a numeric vector.}
+
+\item{num.deci}{If not NULL a vector that states the number reported decimal places for x. This can be used if we know that there were addtional trailing zeros.}
 }
 \description{
 The significand is the integer of all significand digits, e.g.

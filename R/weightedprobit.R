@@ -1,6 +1,8 @@
-#' Function to estimate clustered weighted probit regression with clustered standard errors
+# Function to estimate clustered weighted probit regression with clustered standard errors
 # and to compute marginal effects, borrowed from function probitmfxest from mfx package. The only difference
 # is that the new function defined here allows for weights
+
+# Not yet fully implemented
 probitweighted <- function (formula, data, atmean = TRUE, robust = FALSE, clustervar1 = NULL,
             clustervar2 = NULL, start = NULL, control = list(), weights=NULL) {
     if (is.null(formula)) {
@@ -138,7 +140,9 @@ probitweighted <- function (formula, data, atmean = TRUE, robust = FALSE, cluste
     return(output)
   }
 
-#' Weighted probit with marginal effects and cluster robust se
+# Weighted probit with marginal effects and cluster robust se
+# not yet fully implemented
+
 probitmfxweights <- function (formula, data, atmean = TRUE, robust = FALSE, clustervar1 = NULL, clustervar2 = NULL, start = NULL, control = list(), weights=NULL) {
   res = probitweighted(formula, data, atmean, robust, clustervar1,
                      clustervar2, start, control, weights)

@@ -18,7 +18,8 @@ examples.digit.tools = function(x) {
 #' The significand is the integer of all significand digits, e.g.
 #' the significand of 0.012 is 12.
 #'
-#' @param x a numeric vector
+#' @param x a numeric vector.
+#' @param num.deci If not NULL a vector that states the number reported decimal places for x. This can be used if we know that there were addtional trailing zeros.
 #' @export
 significand = function(x, num.deci=NULL) {
   options(scipen=999)
@@ -66,9 +67,7 @@ num.deci = function(x) {
   as.integer(res)
 }
 
-str.right.of = function (str, pattern, ..., not.found = str)
-{
-
+str.right.of = function (str, pattern, ..., not.found = str) {
     pos = str.locate.first(str, pattern, ...)
     res = substring(str, pos[, 2] + 1, )
     rows = is.na(pos[, 2])

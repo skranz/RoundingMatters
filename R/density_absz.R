@@ -1,10 +1,16 @@
-
-absz.density <- function(x,at=NULL, bw = 0.1, adjust = 1, kernel = "epanechnikov", n = 512) {
+#' Density estimates for absolute z-statistics assuming that z-statistics are symmetrically distributed around 0
+#'
+#' Avoids downward bias at the left hand side where abs(z)=0.
+#'
+#' @param z vector of z-statistics (or absolute z-statistics)
+#' @param at vector of points where density shall be evaluated. If NULL return a function (by calling \code{approxfun}) that allows evaluate the density at arbitrary points.
+#' @param bw,adjust,kernel,n,... arguments passed to \code{stats::density}
+absz.density <- function(z,at=NULL, bw = 0.1, adjust = 1, kernel = "epanechnikov", n = 1024) {
   restore.point("absz.density")
-  x = abs(x)
-  to = max(x)
-  x.vec = c(-abs(x[x>0]),x[x==0],abs(x[x>0]))
-  z.dens <- stats::density(x.vec, bw = bw, adjust = adjust,kernel = kernel,from=-to, to=to, n = 2*n)
+  z = abs(z)
+  to = max(z)
+  z.vec = c(-abs(z[z>0]),z[z==0],abs(z[z>0]))
+  z.dens <- stats::density(z.vec, bw = bw, adjust = adjust,kernel = kernel,from=-to, to=to, n = n,...)
 
   rows = which(z.dens$x>=0)
   dens.adjust = length(z.dens$x)/length(rows)

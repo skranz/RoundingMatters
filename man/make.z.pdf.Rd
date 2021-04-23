@@ -6,8 +6,8 @@
 \usage{
 make.z.pdf(
   z,
-  bw = 0.02,
-  kernel = "epanechnikov",
+  bw = 0.05,
+  kernel = "gaussian",
   n = 512,
   dat,
   min.s = 100,
