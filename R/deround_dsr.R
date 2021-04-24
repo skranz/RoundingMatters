@@ -2,11 +2,8 @@
 
 
 example.dsr = function() {
-  dat = readRDS("C:/research/comment_phack/MM.Rds")
-  dat$num.deci = pmax(num.deci(dat$mu), num.deci(dat$sd))
-  dat$sigma = abs(dat$sd)
-  dat$s = significand(dat$sigma, dat$num.deci)
-  #dat = bind_cols(dat,min.max.z(dat$mu, dat$sigma, dat$num.deci))
+
+  dat = readRDS("C:/research/comment_phack/MM_new.Rds")
 
   h.seq = c(0.05,0.075,0.1,0.2,0.3,0.4,0.5)
 
@@ -187,7 +184,8 @@ dsr.dist.for.obs = function(dat, obs, s.min=100, min.n=10000, min.rounds = 5, ma
 #' @param h.seq vector of considered windows half-width. We mark an observation for adjustment if it is at risk of missclassification, wrong inclusion, or wrong exclusion for any considered window size.
 #' @param z0 the signficance threshold for z (default=1.96).
 #' @param s.max only mark observations for adjustment who have \code{s <= s.max}. Default value is 100.
-dsr.mark.obs = function(dat, h.seq = c(0.05,0.075,0.1,0.2,0.3,0.4,0.5), z0=1.96, s.max = 100) {
+#' @param no.deround a logical vector indicating columns that shall never be derounded
+dsr.mark.obs = function(dat, h.seq = c(0.05,0.075,0.1,0.2,0.3,0.4,0.5), z0=1.96, s.max = 100, no.deround = NULL) {
   restore.point("dsr.mark.obs")
   n = nrow(dat)
   dsr.adjust = rep(FALSE,n)
@@ -197,6 +195,8 @@ dsr.mark.obs = function(dat, h.seq = c(0.05,0.075,0.1,0.2,0.3,0.4,0.5), z0=1.96,
     dsr.adjust = dsr.adjust | risk.any
   }
   dsr.adjust = dsr.adjust & dat$s <= s.max & dat$sigma > 0
+  if (!is.null(no.deround))
+    dsr.adjust = dsr.adjust & !no.deround
   dat$dsr.adjust = dsr.adjust
   dupl = duplicated(select(dat, z,s,dsr.adjust))
   dat$dsr.compute = dat$dsr.adjust & !dupl
