@@ -70,10 +70,11 @@ rounding.risks = function(z,s, z0=1.96, h=0.2) {
 #' @param long if TRUE (default return results in a long format)
 #' @export
 rounding.risks.summary = function(rr.dat,s.thresh = 0:100, long = TRUE) {
+  restore.point("rounding.risks.summary")
   d = rr.dat
 
   risks.wide = bind_rows(lapply(0:100, function(s.bar) {
-    obs.all = sum(d$in.window)
+    obs.all = sum(d$in.window, na.rm=TRUE)
 
     sum.fun = function(x) sum(x, na.rm=TRUE) / obs.all
     res = d %>%
