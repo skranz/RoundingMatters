@@ -60,8 +60,8 @@ study.with.derounding = function(dat, h.seq=c(0.05,0.075,0.1,0.2,0.3,0.4,0.5),wi
     if (is.null(z.pdf))
       stop("For mode zda you must provide the argument z.pdf. Generate it with a call to make.z.pdf.")
   } else if (! mode %in% c("reported","uniform")) {
-    if (is.null(ab.df)) {
-      stop("Unless you have mode 'reported', 'uniform' or 'zda', you must provide the argument ab.df.")
+    if (is.null(ab.df) & is.null(make.z.fun)) {
+      stop("Unless you have mode 'reported', 'uniform' or 'zda', you must provide either the argument ab.df or make.z.fun.")
     }
   }
 
