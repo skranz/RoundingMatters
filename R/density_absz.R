@@ -4,7 +4,7 @@
 #'
 #' @param z vector of z-statistics (or absolute z-statistics)
 #' @param at vector of points where density shall be evaluated. If NULL return a function (by calling \code{approxfun}) that allows evaluate the density at arbitrary points.
-#' @param bw,adjust,kernel,n,... arguments passed to \code{stats::density}
+#' @param bw,adjust,kernel,n,weights,... arguments passed to \code{stats::density}
 absz.density <- function(z,at=NULL, bw = 0.1, adjust = 1, kernel = "epanechnikov", n = 1024, weights=NULL,...) {
   restore.point("absz.density")
   z = abs(z)

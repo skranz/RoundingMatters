@@ -9,6 +9,8 @@
 #' @param bootstrap if TRUE add bootstrap SE and CI for all measures
 #' @param B number of bootstrap repetitions
 #' @param ci.level Confidence level. Default 0.95.
+#' @param weights.num weights for z.num (optional)
+#' @param weights.denom weights for z.denom (optional)
 #' @param ... arguments for absz.density
 absz.density.ratio = function(z.num, z.denom, at, bootstrap=TRUE, B=1000,ci.level=.95, bw = 0.1, kernel = "epanechnikov",  return.as = c("long","wide")[1],weights.num=NULL, weights.denom=NULL, ...) {
 

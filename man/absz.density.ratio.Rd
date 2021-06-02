@@ -15,6 +15,8 @@ absz.density.ratio(
   bw = 0.1,
   kernel = "epanechnikov",
   return.as = c("long", "wide")[1],
+  weights.num = NULL,
+  weights.denom = NULL,
   ...
 )
 }
@@ -30,6 +32,10 @@ absz.density.ratio(
 \item{B}{number of bootstrap repetitions}
 
 \item{ci.level}{Confidence level. Default 0.95.}
+
+\item{weights.num}{weights for z.num (optional)}
+
+\item{weights.denom}{weights for z.denom (optional)}
 
 \item{...}{arguments for absz.density}
 }

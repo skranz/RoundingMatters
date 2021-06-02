@@ -10,7 +10,9 @@ absz.density(
   bw = 0.1,
   adjust = 1,
   kernel = "epanechnikov",
-  n = 1024
+  n = 1024,
+  weights = NULL,
+  ...
 )
 }
 \arguments{
@@ -18,7 +20,7 @@ absz.density(
 
 \item{at}{vector of points where density shall be evaluated. If NULL return a function (by calling \code{approxfun}) that allows evaluate the density at arbitrary points.}
 
-\item{bw, adjust, kernel, n, ...}{arguments passed to \code{stats::density}}
+\item{bw, adjust, kernel, n, weights, ...}{arguments passed to \code{stats::density}}
 }
 \description{
 Avoids downward bias at the left hand side where abs(z)=0.
