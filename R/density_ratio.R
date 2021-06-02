@@ -10,12 +10,12 @@
 #' @param B number of bootstrap repetitions
 #' @param ci.level Confidence level. Default 0.95.
 #' @param ... arguments for absz.density
-absz.density.ratio = function(z.num, z.denom, at, bootstrap=TRUE, B=1000,ci.level=.95, bw = 0.1, kernel = "epanechnikov",  return.as = c("long","wide")[1], ...) {
+absz.density.ratio = function(z.num, z.denom, at, bootstrap=TRUE, B=1000,ci.level=.95, bw = 0.1, kernel = "epanechnikov",  return.as = c("long","wide")[1],weights.num=NULL, weights.denom=NULL, ...) {
 
   z.num = abs(z.num)
   z.denom = abs(z.denom)
-  density.num = absz.density(z.num, at=at, bw=bw, kernel = kernel, ...)
-  density.denom = absz.density(z.denom, at=at, bw=bw, kernel = kernel, ...)
+  density.num = absz.density(z.num, at=at, bw=bw, kernel = kernel, weights=weights.num, ...)
+  density.denom = absz.density(z.denom, at=at, bw=bw, kernel = kernel, weights=weights.denom, ...)
   ratio = density.num / density.denom
   if (return.as == "wide" & !bootstrap) {
     res = quick.df(at = at, density.num=density.num, density.denom = density.denom, ratio = ratio)

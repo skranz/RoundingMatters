@@ -5,12 +5,18 @@
 #' @param z vector of z-statistics (or absolute z-statistics)
 #' @param at vector of points where density shall be evaluated. If NULL return a function (by calling \code{approxfun}) that allows evaluate the density at arbitrary points.
 #' @param bw,adjust,kernel,n,... arguments passed to \code{stats::density}
-absz.density <- function(z,at=NULL, bw = 0.1, adjust = 1, kernel = "epanechnikov", n = 1024,...) {
+absz.density <- function(z,at=NULL, bw = 0.1, adjust = 1, kernel = "epanechnikov", n = 1024, weights=NULL,...) {
   restore.point("absz.density")
   z = abs(z)
   to = max(z)
+
   z.vec = c(-abs(z[z>0]),z[z==0],abs(z[z>0]))
-  z.dens <- stats::density(z.vec, bw = bw, adjust = adjust,kernel = kernel,from=-to, to=to, n = n,...)
+  if (!is.null(weights)) {
+    weights = c(weights[z>0], weights[z==0], weights[z>0])
+    weights = weights / sum(weights)
+  }
+
+  z.dens <- stats::density(z.vec, bw = bw, adjust = adjust,kernel = kernel,from=-to, to=to, n = n,weights=weights,...)
 
   rows = which(z.dens$x>=0)
   dens.adjust = length(z.dens$x)/length(rows)
@@ -129,15 +135,8 @@ StatAbsZDensity <- ggproto("StatAbsZDensity", Stat,
 
 )
 
-compute_abszdensity <- function(x, w, from, to, bw = "nrd0", adjust = 1,
-                            kernel = "gaussian", n = 512) {
+compute_abszdensity <- function(x, weights=NULL, from, to, bw = "nrd0", adjust = 1, kernel = "gaussian", n = 512) {
   nx <- length(x)
-  if (is.null(w)) {
-    w <- rep(1 / nx, nx)
-  } else {
-    w <- w / sum(w)
-  }
-  w = NULL
 
   # if less than 2 points return data frame of NAs and a warning
   if (nx < 2) {
@@ -155,7 +154,13 @@ compute_abszdensity <- function(x, w, from, to, bw = "nrd0", adjust = 1,
   from = 0
   x = abs(x)
   x.vec = c(-abs(x[x>0]),x[x==0],abs(x[x>0]))
-  dens <- stats::density(x.vec, weights = NULL, bw = bw, adjust = adjust, from=-to, to=to,kernel = kernel, n = 2*n)
+  if (!is.null(weights)) {
+    weights = c(weights[x>0], weights[x==0], weights[x>0])
+    weights = weights / sum(weights)
+  }
+
+
+  dens <- stats::density(x.vec, weights = weights, bw = bw, adjust = adjust, from=-to, to=to,kernel = kernel, n = 2*n)
 
   rows = which(dens$x>=0)
 
