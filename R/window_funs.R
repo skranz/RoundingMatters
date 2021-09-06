@@ -27,6 +27,33 @@ window.t.ci = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
 
 }
 
+
+#' Window function returning estimated probability that a z-statistic is
+#' above a threshold z0 in a window with half-width h around z0 and
+#' exact binomial test confidence intervals
+#'
+#' Can be used as argument \code{window.fun} in \code{\link{compute.with.derounding}}
+#'
+#' @export
+window.binom.ci = function(above=z>=z0,h=NA, ci.level=0.95,z,z0,...) {
+  #restore.point("window.bio.ci")
+  n = length(above)
+  theta = mean(above)
+  se = sd(above) / sqrt(n)
+
+  # We use t-confidence intervals
+  # for large n, t.quant is roughly 1.96 for
+  # ci.level = 0.95
+  test = binom.test(x=sum(above), n=n,p=0.5, alternative="two.sided", conf.level=ci.level)
+
+  ci.low = test$conf.int[1]
+  ci.up = test$conf.int[2]
+
+  as_tibble(list(h=h,theta=theta, se=se, ci.level = ci.level, ci.low=ci.low, ci.up = ci.up, obs=n))
+
+}
+
+
 #' Apply on windows one-sided binomiminal test with H0: z <= z0
 #'
 #' @export
